@@ -1,75 +1,62 @@
-import { createSignal, Component } from "solid-js";
+import { encodeOutpointInput } from "metashrew-runes";
+import { createSignal, Component, createResource } from "solid-js";
 
-type Block = {
-  blockNumber: number;
-  timestamp: string;
-  miner: string;
-  txCount: number;
-  transactions: Array<string>; // Could be a detailed transaction object
-};
-
-const mockBlockData: Block = {
-  blockNumber: 1234567,
-  timestamp: "2024-09-06 10:45:00",
-  miner: "0x1234...abcd",
-  txCount: 3,
-  transactions: ["0xabc123...def456", "0x789xyz...789abc", "0xdef456...abc123"],
+const fetchRunesByAddress = async (address: string) => {
+  const encodedAddress = encodeOutpointInput(address, 0);
+  const response = await fetch("http://localhost:8080", {
+    method: "POST",
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 0,
+      method: "metashrew_view",
+      params: ["runesbyaddress", encodedAddress],
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  console.log(await response.json());
+  return await response.json();
 };
 
 const App: Component = () => {
   const [searchInput, setSearchInput] = createSignal("");
-  const [block, setBlock] = createSignal<Block | null>(null);
-  const [error, setError] = createSignal("");
+  const [rune, setRune] = createSignal(null);
+  //const [runes] = createResource(rune, fetchRunesByAddress);
 
-  const handleSearch = () => {
-    // In a real-world app, you'd fetch data from an API using the search input
-    // For now, we simulate the block data
-    if (searchInput() === "1234567") {
-      setBlock(mockBlockData);
-      setError("");
-    } else {
-      setBlock(null);
-      setError("Block or transaction not found.");
-    }
+  const handleSearch = async () => {
+    await fetchRunesByAddress(
+      "bcrt1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqvg32hk"
+    );
   };
 
   return (
-    <div class="bg-gradient-1 h-screen p-[15px] ">
-      <h1 style={{ "text-align": "center" }}>Alkanes Explorer</h1>
+    <div class="bg-gradient-1 h-screen p-[15px]">
+      <h1 class="text-center mb-[10px]">Alkanes Explorer</h1>
 
       {/* Search bar */}
-      <div class="text-center mb-[20px] flex flex-row justify-center">
-        <input
-          type="text"
-          value={searchInput()}
-          onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
-          placeholder="Search by block number or transaction ID"
-          style={{
-            padding: "10px",
-            "font-size": "16px",
-            width: "300px",
-            "border-radius": "5px",
-            border: "1px solid #ccc",
-          }}
-        />
-        <button
-          onClick={handleSearch}
-          style={{
-            padding: "10px 20px",
-            "margin-left": "10px",
-            "font-size": "16px",
-            cursor: "pointer",
-            background: "#007bff",
-            color: "#fff",
-            border: "none",
-            "border-radius": "5px",
-          }}
-        >
-          Search
-        </button>
+      <div class="text-center mb-[20px] flex flex-row justify-center ">
+        <span class="rounded-[5px] border border-gray-300 p-[3px]">
+          <input
+            type="text"
+            value={searchInput()}
+            onInput={(e) =>
+              setSearchInput((e.target as HTMLInputElement).value)
+            }
+            placeholder="Search by block number or transaction ID"
+            class="p-[10px] text-[16px] w-[410px] rounded-[5px]"
+          />
+          <button
+            onClick={handleSearch}
+            class="p-[10px] text-[16px] bg-black text-white rounded-[5px] hover:bg-lime-200 hover:text-black"
+          >
+            Search
+          </button>
+        </span>
       </div>
 
-      <div class="grid sm:grid-cols-2 sm:gap-2 lg:gap:4 lg:grid-cols-3">
+      {/* Responsive Grid */}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { name: "rune1", inscId: "#1234" },
           { name: "rune2", inscId: "#1234" },
@@ -79,15 +66,6 @@ const App: Component = () => {
           return AssetSquare({ name: asset.name, inscId: asset.inscId });
         })}
       </div>
-
-      {/* Error message */}
-      {error() && (
-        <p
-          style={{ color: "red", "text-align": "center", "margin-top": "20px" }}
-        >
-          {error()}
-        </p>
-      )}
     </div>
   );
 };
@@ -96,11 +74,12 @@ export default App;
 
 const AssetSquare: Component = (props: any) => {
   return (
-    <div class=" aspect-square border border-[1px] border-black sm:h-[235px] md:h-[300px] rounded-lg text-black flex flex-col justify-center items-start p-[15px]">
-      <span class="bg-stone-400 flex flex-row justify-center items-center w-full aspect-square">
+    <div class="border border-black rounded-lg flex flex-col justify-start items-center p-[15px]">
+      {/* Square inside the rectangle */}
+      <div class="bg-stone-400 w-full aspect-square flex justify-center items-center">
         {props.name}
-      </span>
-      <span class="bg-black rounded-md px-[1px] py-[2px] text-white mt-[10px]">
+      </div>
+      <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
         {props.inscId}
       </span>
     </div>

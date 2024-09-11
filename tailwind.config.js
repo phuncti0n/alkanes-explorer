@@ -3,8 +3,8 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     fontFamily: {
-      sans: ["Inter Variable", "sans-serif"],
-      mono: ["Geist Mono", "monospaced"],
+      sans: ["Inter", "sans-serif"],
+      mono: ["Geist", "monospaced"],
     },
     screens: {
       sm: "440px",

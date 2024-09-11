@@ -26,3 +26,23 @@
   );
   --gradient-5: linear-gradient(180deg, #f7fafc 0%, #f5ecf7 51%, #ffebdf 100%);
 }
+
+@font-face {
+  font-family: "Inter"; /* Name of your custom font */
+  src: url("/src/assets/fonts/InterVariable-Regular.woff2") format("woff2"),
+    url("/src/assets/fonts/InterVariable-Medium.woff2") format("woff2");
+  font-weight: 400; /* Regular */
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Geist"; /* Name of your custom font */
+  src: url("/src/assets/fonts/GeistMono-Medium.woff2") format("woff2"),
+    url("/src/assets/fonts/GeistMono-Regular.woff2") format("woff2");
+  font-weight: 400; /* Regular */
+  font-style: normal;
+}
+
+html {
+  @apply font-mono;
+}
