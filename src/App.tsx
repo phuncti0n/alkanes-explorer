@@ -34,11 +34,11 @@ const App: Component = () => {
   };
 
   return (
-    <div style={{ padding: "20px", "font-family": "Arial, sans-serif" }}>
+    <div class="bg-gradient-1 h-screen p-[15px] ">
       <h1 style={{ "text-align": "center" }}>Alkanes Explorer</h1>
 
       {/* Search bar */}
-      <div style={{ "text-align": "center", "margin-bottom": "20px" }}>
+      <div class="text-center mb-[20px] flex flex-row justify-center">
         <input
           type="text"
           value={searchInput()}
@@ -69,38 +69,16 @@ const App: Component = () => {
         </button>
       </div>
 
-      {/* Block information */}
-      {block() && (
-        <div
-          style={{
-            border: "1px solid #ccc",
-            padding: "20px",
-            "border-radius": "10px",
-          }}
-        >
-          <h2>Block Details</h2>
-          <a href={"/block/" + block()?.blockNumber}>
-            <strong>Block Number:</strong> {block()?.blockNumber}
-          </a>
-          <p>
-            <strong>Timestamp:</strong> {block()?.timestamp}
-          </p>
-          <p>
-            <strong>Miner:</strong> {block()?.miner}
-          </p>
-          <p>
-            <strong>Transaction Count:</strong> {block()?.txCount}
-          </p>
-
-          {/* Transactions */}
-          <h3>Transactions</h3>
-          <ul>
-            {block()?.transactions.map((tx) => (
-              <li>{tx}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div class="grid sm:grid-cols-2 sm:gap-2 lg:gap:4 lg:grid-cols-3">
+        {[
+          { name: "rune1", inscId: "#1234" },
+          { name: "rune2", inscId: "#1234" },
+          { name: "rune3", inscId: "#1234" },
+          { name: "rune4", inscId: "#1234" },
+        ].map((asset) => {
+          return AssetSquare({ name: asset.name, inscId: asset.inscId });
+        })}
+      </div>
 
       {/* Error message */}
       {error() && (
@@ -115,3 +93,16 @@ const App: Component = () => {
 };
 
 export default App;
+
+const AssetSquare: Component = (props: any) => {
+  return (
+    <div class=" aspect-square border border-[1px] border-black sm:h-[235px] md:h-[300px] rounded-lg text-black flex flex-col justify-center items-start p-[15px]">
+      <span class="bg-stone-400 flex flex-row justify-center items-center w-full aspect-square">
+        {props.name}
+      </span>
+      <span class="bg-black rounded-md px-[1px] py-[2px] text-white mt-[10px]">
+        {props.inscId}
+      </span>
+    </div>
+  );
+};

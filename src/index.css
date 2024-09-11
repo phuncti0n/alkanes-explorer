@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --gradient-1: linear-gradient(180deg, #f7fafc 0%, #f4eaea 51%, #d1d9e3 100%);
+  --gradient-2: linear-gradient(
+    180deg,
+    #f7fafc 0%,
+    #f2f2eb 80.7%,
+    #fff3d5 100%
+  );
+  --gradient-3: linear-gradient(
+    180deg,
+    #f7fafc 0%,
+    #dbe2e8 44.66%,
+    #c5cfd3 70.5%,
+    #e1d3c8 88%,
+    #fee6db 100%
+  );
+  --gradient-4: linear-gradient(
+    180deg,
+    #f7fafc 0%,
+    #edeee9 44.66%,
+    #e1e2dd 100%
+  );
+  --gradient-5: linear-gradient(180deg, #f7fafc 0%, #f5ecf7 51%, #ffebdf 100%);
+}
