@@ -1,8 +1,13 @@
+import {
+  OutPoint,
+  decodeWalletOutput,
+  encodeOutpointInput,
+} from "metashrew-runes";
 import { encodeWalletInput } from "metashrew-runes/lib/src.ts/wallet";
 import { createSignal, Component, createResource } from "solid-js";
 
-const fetchRunesByAddress = async (address: string) => {
-  const encodedAddress = encodeWalletInput(address);
+const fetchRunesByWallet = async (address: string) => {
+  const encodedWallet = encodeWalletInput(address);
   const response = await (
     await fetch("http://localhost:8080", {
       method: "POST",
@@ -10,29 +15,33 @@ const fetchRunesByAddress = async (address: string) => {
         jsonrpc: "2.0",
         id: 0,
         method: "metashrew_view",
-        params: ["runesbyaddress", encodedAddress, "latest"],
+        params: ["runesbyaddress", encodedWallet, "latest"],
       }),
       headers: {
         "Content-Type": "application/json",
       },
     })
   ).json();
-
-  console.log(response);
-  return response;
+  const result = decodeWalletOutput(response.result);
+  return result;
 };
 
 const App: Component = () => {
   const [searchInput, setSearchInput] = createSignal("");
-  const [rune, setRune] = createSignal(null);
-  //const [runes] = createResource(rune, fetchRunesByAddress);
+  const [allRunes, setAllRunes] = createSignal<{
+    outpoints: OutPoint[];
+    balanceSheet: any[];
+  }>({ outpoints: [], balanceSheet: [] });
+  // const [runes] = createResource(fetchRunesByWallet);
 
   const handleSearch = async () => {
-    await fetchRunesByAddress("bcrt1qcr8te4kr609gcawutmrza0j4xv80jy8zeqchgx");
+    const ret = await fetchRunesByWallet(searchInput());
+    console.log(ret);
+    setAllRunes(ret);
   };
 
   return (
-    <div class="bg-gradient-1 h-screen p-[15px]">
+    <div class="p-[15px]">
       <h1 class="text-center mb-[10px]">Alkanes Explorer</h1>
 
       {/* Search bar */}
@@ -58,13 +67,8 @@ const App: Component = () => {
 
       {/* Responsive Grid */}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          { name: "rune1", inscId: "#1234" },
-          { name: "rune2", inscId: "#1234" },
-          { name: "rune3", inscId: "#1234" },
-          { name: "rune4", inscId: "#1234" },
-        ].map((asset) => {
-          return AssetSquare({ name: asset.name, inscId: asset.inscId });
+        {allRunes().balanceSheet.map((asset, index) => {
+          return AssetSquare({ asset, index });
         })}
       </div>
     </div>
@@ -74,15 +78,26 @@ const App: Component = () => {
 export default App;
 
 const AssetSquare: Component = (props: any) => {
+  const rune = props?.asset.rune;
+  const balance = props?.asset.balance;
+
   return (
     <div class="border border-black rounded-lg flex flex-col justify-start items-center p-[15px]">
       {/* Square inside the rectangle */}
-      <div class="bg-stone-400 w-full aspect-square flex justify-center items-center">
-        {props.name}
+      <div class="bg-stone-400 w-full aspect-square flex justify-center items-center flex-col">
+        <span>{"Name: " + rune.name}</span>
+        <span>{"Divisibility: " + rune.divisibility}</span>
+        <span>{"Spacers: " + rune.spacers}</span>
+        <span>{"Symbol: " + rune.symbol}</span>
       </div>
-      <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
-        {props.inscId}
-      </span>
+      <div class="flex flex-row justify-between w-full">
+        <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
+          {"Rune Id: " + rune.id}
+        </span>
+        <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
+          {"Balance:" + Number(balance)}
+        </span>
+      </div>
     </div>
   );
 };

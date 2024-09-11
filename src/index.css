@@ -43,6 +43,9 @@
   font-style: normal;
 }
 
-html {
-  @apply font-mono;
+@layer base {
+  html {
+    @apply font-mono;
+    background-color: var(--gradient-1);
+  }
 }
