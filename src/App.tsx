@@ -1,22 +1,25 @@
-import { encodeOutpointInput } from "metashrew-runes";
+import { encodeWalletInput } from "metashrew-runes/lib/src.ts/wallet";
 import { createSignal, Component, createResource } from "solid-js";
 
 const fetchRunesByAddress = async (address: string) => {
-  const encodedAddress = encodeOutpointInput(address, 0);
-  const response = await fetch("http://localhost:8080", {
-    method: "POST",
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: 0,
-      method: "metashrew_view",
-      params: ["runesbyaddress", encodedAddress],
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  console.log(await response.json());
-  return await response.json();
+  const encodedAddress = encodeWalletInput(address);
+  const response = await (
+    await fetch("http://localhost:8080", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "metashrew_view",
+        params: ["runesbyaddress", encodedAddress, "latest"],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+
+  console.log(response);
+  return response;
 };
 
 const App: Component = () => {
@@ -25,9 +28,7 @@ const App: Component = () => {
   //const [runes] = createResource(rune, fetchRunesByAddress);
 
   const handleSearch = async () => {
-    await fetchRunesByAddress(
-      "bcrt1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqvg32hk"
-    );
+    await fetchRunesByAddress("bcrt1qcr8te4kr609gcawutmrza0j4xv80jy8zeqchgx");
   };
 
   return (
