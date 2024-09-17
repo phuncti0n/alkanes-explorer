@@ -1,30 +1,11 @@
-import {
-  OutPoint,
-  decodeWalletOutput,
-  encodeOutpointInput,
-} from "metashrew-runes";
-import { encodeWalletInput } from "metashrew-runes/lib/src.ts/wallet";
+import { OutPoint } from "metashrew-runes";
 import { createSignal, Component, createResource } from "solid-js";
-
-const fetchRunesByWallet = async (address: string) => {
-  const encodedWallet = encodeWalletInput(address);
-  const response = await (
-    await fetch("http://localhost:8080", {
-      method: "POST",
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 0,
-        method: "metashrew_view",
-        params: ["runesbyaddress", encodedWallet, "latest"],
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-  ).json();
-  const result = decodeWalletOutput(response.result);
-  return result;
-};
+import {
+  fetchRunesByBlockHeight,
+  fetchRunesByWallet,
+  isValidBitcoinAddress,
+  isValidBitcoinTxId,
+} from "./utils";
 
 const App: Component = () => {
   const [searchInput, setSearchInput] = createSignal("");
@@ -32,12 +13,30 @@ const App: Component = () => {
     outpoints: OutPoint[];
     balanceSheet: any[];
   }>({ outpoints: [], balanceSheet: [] });
-  // const [runes] = createResource(fetchRunesByWallet);
+  const [runes] = createResource(() => fetchRunesByBlockHeight(263));
 
   const handleSearch = async () => {
-    const ret = await fetchRunesByWallet(searchInput());
-    console.log(ret);
-    setAllRunes(ret);
+    const input = searchInput();
+    const isAddress = isValidBitcoinAddress(input);
+    const isBlock = !isNaN(Number(input));
+    const isTxn = isValidBitcoinTxId(input);
+    if (isAddress) {
+      const ret = await fetchRunesByWallet(searchInput());
+      console.log(ret);
+      setAllRunes(ret);
+    }
+
+    // if (isBlock) {
+    //   const ret = await fetchRunesByBlockHeight(Number(input));
+    //   console.log(ret);
+    //   setAllRunes(ret);
+    // }
+
+    // if (isTxn) {
+    //   const ret = await fetchRunesByTxn(input);
+    //   console.log(ret);
+    //   setAllRunes(ret);
+    // }
   };
 
   return (
@@ -67,8 +66,8 @@ const App: Component = () => {
 
       {/* Responsive Grid */}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {allRunes().balanceSheet.map((asset, index) => {
-          return AssetSquare({ asset, index });
+        {runes()?.runes?.map((asset, index) => {
+          return BlockAssetSquare({ asset, index });
         })}
       </div>
     </div>
@@ -77,7 +76,7 @@ const App: Component = () => {
 
 export default App;
 
-const AssetSquare: Component = (props: any) => {
+export const AssetSquare: Component = (props: any) => {
   const rune = props?.asset.rune;
   const balance = props?.asset.balance;
 
@@ -96,6 +95,30 @@ const AssetSquare: Component = (props: any) => {
         </span>
         <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
           {"Balance:" + Number(balance)}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export const BlockAssetSquare: Component = (props: any) => {
+  const rune = props?.asset;
+
+  return (
+    <div class="border border-black rounded-lg flex flex-col justify-start items-center p-[15px]">
+      {/* Square inside the rectangle */}
+      <div class="bg-stone-400 w-full aspect-square flex justify-center items-center flex-col">
+        <span>{"Name: " + rune.name}</span>
+        <span>{"Divisibility: " + rune.divisibility}</span>
+        <span>{"Spacers: " + rune.spacers}</span>
+        <span>{"Symbol: " + rune.symbol}</span>
+      </div>
+      <div class="flex flex-row justify-between w-full">
+        <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
+          {"Block: " + rune.runeId.split(":")[0]}
+        </span>
+        <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
+          {"Tx #: " + rune.runeId.split(":")[1]}
         </span>
       </div>
     </div>

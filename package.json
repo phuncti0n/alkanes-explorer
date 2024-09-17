@@ -21,8 +21,10 @@
     "vite-plugin-solid": "^2.8.2"
   },
   "dependencies": {
+    "@types/bitcoinjs-lib": "^5.0.0",
     "@types/node": "^22.5.4",
-    "metashrew-runes": "git+https://github.com/sandshrewmetaprotocols/metashrew-runes.git",
+    "bitcoinjs-lib": "^7.0.0-rc.0",
+    "metashrew-runes": "git+https://github.com/sandshrewmetaprotocols/metashrew-runes.git#dee/rune-by-block-height",
     "vite-plugin-node-polyfills": "^0.22.0"
   }
 }
