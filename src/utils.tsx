@@ -4,33 +4,18 @@ import {
   decodeRunesResponse,
 } from "metashrew-runes/lib/src.ts/outpoint";
 import { decodeWalletOutput, encodeWalletInput } from "metashrew-runes";
+import {
+  encodeProtorunesWalletInput,
+  decodeRuntimeOutput,
+} from "protorune/lib/src.ts/wallet";
+import { getAddressType } from "@oyl/sdk";
 
 export function isValidBitcoinAddress(address: string): boolean {
-  try {
-    // Check for mainnet
-    bitcoin.address.toOutputScript(address, bitcoin.networks.bitcoin);
+  const valid = getAddressType(address);
+  if (valid) {
     return true;
-  } catch (e) {
-    // Ignore and try the next network
   }
-
-  try {
-    // Check for testnet
-    bitcoin.address.toOutputScript(address, bitcoin.networks.testnet);
-    return true;
-  } catch (e) {
-    // Ignore and try the next network
-  }
-
-  try {
-    // Check for regtest
-    bitcoin.address.toOutputScript(address, bitcoin.networks.regtest);
-    return true;
-  } catch (e) {
-    // Ignore
-  }
-
-  return false; // If no valid network match, return false
+  return false;
 }
 
 export function isValidBitcoinTxId(txid: string): boolean {
@@ -56,6 +41,29 @@ export const fetchRunesByWallet = async (address: string) => {
     })
   ).json();
   const result = decodeWalletOutput(response.result);
+  console.log(result);
+  return result;
+};
+
+export const fetchProtoRunesByWallet = async (address: string) => {
+  console.log(address);
+  const encodedWallet = encodeProtorunesWalletInput(address, 64n);
+  const response = await (
+    await fetch("http://localhost:8080", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "metashrew_view",
+        params: ["protorunesbyaddress", encodedWallet, "latest"],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+  const result = decodeWalletOutput(response.result);
+  console.log(result);
   return result;
 };
 
@@ -76,5 +84,46 @@ export const fetchRunesByBlockHeight = async (block: number) => {
     })
   ).json();
   const result = decodeRunesResponse(response.result);
+  return result;
+};
+
+export const getCurrentBlock = async () => {
+  const response = await (
+    await fetch("http://localhost:3000/v1/regtest", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "btc_getblockcount",
+        params: [],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+  return response.result;
+};
+
+export const fetchRunesByCurrentBlockHeight = async () => {
+  const currentBlock = await getCurrentBlock();
+  console.log(currentBlock);
+  const encodedBlock = encodeBlockHeightInput(await getCurrentBlock());
+  const response = await (
+    await fetch("http://localhost:8080", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "metashrew_view",
+        params: ["runesbyheight", encodedBlock, "latest"],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+  const result = decodeRunesResponse(response.result);
+  console.log(result);
   return result;
 };

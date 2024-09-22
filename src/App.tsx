@@ -1,11 +1,14 @@
 import { OutPoint } from "metashrew-runes";
 import { createSignal, Component, createResource } from "solid-js";
 import {
-  fetchRunesByBlockHeight,
+  fetchProtoRunesByWallet,
+  fetchRunesByCurrentBlockHeight,
   fetchRunesByWallet,
   isValidBitcoinAddress,
   isValidBitcoinTxId,
 } from "./utils";
+import { Router, redirect, useNavigate } from "@solidjs/router";
+import { Header } from "../components/header";
 
 const App: Component = () => {
   const [searchInput, setSearchInput] = createSignal("");
@@ -13,7 +16,8 @@ const App: Component = () => {
     outpoints: OutPoint[];
     balanceSheet: any[];
   }>({ outpoints: [], balanceSheet: [] });
-  const [runes] = createResource(() => fetchRunesByBlockHeight(263));
+  const nav = useNavigate();
+  const [runes] = createResource(() => fetchRunesByCurrentBlockHeight());
 
   const handleSearch = async () => {
     const input = searchInput();
@@ -21,9 +25,7 @@ const App: Component = () => {
     const isBlock = !isNaN(Number(input));
     const isTxn = isValidBitcoinTxId(input);
     if (isAddress) {
-      const ret = await fetchRunesByWallet(searchInput());
-      console.log(ret);
-      setAllRunes(ret);
+      nav(`/wallet/${searchInput()}`);
     }
 
     // if (isBlock) {
@@ -41,7 +43,7 @@ const App: Component = () => {
 
   return (
     <div class="p-[15px]">
-      <h1 class="text-center mb-[10px]">Alkanes Explorer</h1>
+      <Header />
 
       {/* Search bar */}
       <div class="text-center mb-[20px] flex flex-row justify-center ">

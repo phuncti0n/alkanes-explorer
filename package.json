@@ -21,10 +21,13 @@
     "vite-plugin-solid": "^2.8.2"
   },
   "dependencies": {
+    "@oyl/sdk": "https://github.com/Oyl-Wallet/oyl-sdk#main",
     "@types/bitcoinjs-lib": "^5.0.0",
     "@types/node": "^22.5.4",
     "bitcoinjs-lib": "^7.0.0-rc.0",
+    "leb128": "^0.0.5",
     "metashrew-runes": "git+https://github.com/sandshrewmetaprotocols/metashrew-runes.git#dee/rune-by-block-height",
+    "protorune": "https://github.com/kungfuflex/protorune.git",
     "vite-plugin-node-polyfills": "^0.22.0"
   }
 }
