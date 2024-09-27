@@ -4,6 +4,9 @@ import {
   fetchProtoRunesByWallet,
   fetchRunesByCurrentBlockHeight,
   fetchRunesByWallet,
+  getBlockHash,
+  getTxDetails,
+  getTxHash,
   isValidBitcoinAddress,
   isValidBitcoinTxId,
 } from "./utils";
@@ -18,7 +21,6 @@ const App: Component = () => {
   }>({ outpoints: [], balanceSheet: [] });
   const nav = useNavigate();
   const [runes] = createResource(() => fetchRunesByCurrentBlockHeight());
-
   const handleSearch = async () => {
     const input = searchInput();
     const isAddress = isValidBitcoinAddress(input);
@@ -68,9 +70,13 @@ const App: Component = () => {
 
       {/* Responsive Grid */}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {runes()?.runes?.map((asset, index) => {
-          return BlockAssetSquare({ asset, index });
-        })}
+        {runes()?.runes ? (
+          runes()?.runes.map((asset, index) => {
+            return BlockAssetSquare({ asset, index, nav });
+          })
+        ) : (
+          <div>You hold no runes or protorunes</div>
+        )}
       </div>
     </div>
   );
@@ -81,7 +87,6 @@ export default App;
 export const AssetSquare: Component = (props: any) => {
   const rune = props?.asset.rune;
   const balance = props?.asset.balance;
-
   return (
     <div class="border border-black rounded-lg flex flex-col justify-start items-center p-[15px]">
       {/* Square inside the rectangle */}
@@ -89,7 +94,7 @@ export const AssetSquare: Component = (props: any) => {
         <span>{"Name: " + rune.name}</span>
         <span>{"Divisibility: " + rune.divisibility}</span>
         <span>{"Spacers: " + rune.spacers}</span>
-        <span>{"Symbol: " + rune.symbol}</span>
+        <span>{"Symbol: " + "\uf916"}</span>
       </div>
       <div class="flex flex-row justify-between w-full">
         <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
@@ -105,9 +110,18 @@ export const AssetSquare: Component = (props: any) => {
 
 export const BlockAssetSquare: Component = (props: any) => {
   const rune = props?.asset;
+  const nav = props.nav;
+  const blockHeight = rune.runeId.split(":")[0];
+  const txIndex = rune.runeId.split(":")[1];
 
   return (
-    <div class="border border-black rounded-lg flex flex-col justify-start items-center p-[15px]">
+    <div
+      onClick={async () => {
+        const txId = await getTxHash(276, 1);
+        nav(`/txn/${txId}`);
+      }}
+      class="cursor-pointer border border-black rounded-lg flex flex-col justify-start items-center p-[15px]"
+    >
       {/* Square inside the rectangle */}
       <div class="bg-stone-400 w-full aspect-square flex justify-center items-center flex-col">
         <span>{"Name: " + rune.name}</span>
@@ -117,10 +131,10 @@ export const BlockAssetSquare: Component = (props: any) => {
       </div>
       <div class="flex flex-row justify-between w-full">
         <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
-          {"Block: " + rune.runeId.split(":")[0]}
+          {"Block: " + blockHeight}
         </span>
         <span class="bg-black self-start rounded-md px-[2px] py-[2px] text-white mt-[10px]">
-          {"Tx #: " + rune.runeId.split(":")[1]}
+          {"Tx #: " + txIndex}
         </span>
       </div>
     </div>

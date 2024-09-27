@@ -19,7 +19,7 @@ render(
       <Route path="/" component={Home} />
       <Route path="/alkane/:alkaneId" component={Alkane} />
       <Route path="/block/:blockNumber" component={Block} />
-      <Route path="/txn/:txnId" component={Txn} />
+      <Route path="/txn/:txId" component={Txn} />
       <Route path="/wallet/:address" component={Wallet} />
     </Router>
   ),

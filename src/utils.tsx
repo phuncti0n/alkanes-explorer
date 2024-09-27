@@ -8,7 +8,7 @@ import {
   encodeProtorunesWalletInput,
   decodeRuntimeOutput,
 } from "protorune/lib/src.ts/wallet";
-import { getAddressType } from "@oyl/sdk";
+import { getAddressType, Provider } from "@oyl/sdk";
 
 export function isValidBitcoinAddress(address: string): boolean {
   const valid = getAddressType(address);
@@ -107,8 +107,7 @@ export const getCurrentBlock = async () => {
 
 export const fetchRunesByCurrentBlockHeight = async () => {
   const currentBlock = await getCurrentBlock();
-  console.log(currentBlock);
-  const encodedBlock = encodeBlockHeightInput(await getCurrentBlock());
+  const encodedBlock = encodeBlockHeightInput(currentBlock);
   const response = await (
     await fetch("http://localhost:8080", {
       method: "POST",
@@ -126,4 +125,61 @@ export const fetchRunesByCurrentBlockHeight = async () => {
   const result = decodeRunesResponse(response.result);
   console.log(result);
   return result;
+};
+
+export const getTxHash = async (blockHeight: number, index: number) => {
+  const blockhash = await getBlockHash({ height: blockHeight });
+  const txPageIndex = Math.floor(index / 25) * 25;
+  const response = await (
+    await fetch("http://localhost:3000/v1/regtest", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: `esplora_block`,
+        params: [blockhash, `/txs/${txPageIndex}`],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+  return response.result[index]["txid"];
+};
+
+export const getTxDetails = async (hash: string) => {
+  const response = await (
+    await fetch("http://localhost:3000/v1/regtest", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: `esplora_tx`,
+        params: [hash],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+  console.log(response.result);
+  return response.result;
+};
+
+export const getBlockHash = async ({ height }: { height: number }) => {
+  const response = await (
+    await fetch("http://localhost:3000/v1/regtest", {
+      method: "POST",
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 0,
+        method: "esplora_block-height",
+        params: [height],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+  ).json();
+  return response.result;
 };
